@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f7ff">
+  <title>BMI Calculator | からだバランス</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #20243a;
+      --muted: #777d94;
+      --primary: #6558e8;
+      --primary-dark: #5144cc;
+      --surface: #ffffff;
+      --background: #f5f7ff;
+      --line: #e9eaf3;
+      --shadow: 0 24px 70px rgba(42, 46, 88, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 36px 20px;
+      display: grid;
+      place-items: center;
+      color: var(--ink);
+      background:
+        radial-gradient(ellipse at 12% 10%, rgba(183, 173, 255, 0.28), transparent 34%),
+        radial-gradient(ellipse at 90% 90%, rgba(133, 222, 210, 0.24), transparent 34%),
+        var(--background);
+      font-family:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP",
+        "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    .app {
+      width: min(100%, 960px);
+    }
+
+    .header {
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      color: #fff;
+      background: linear-gradient(145deg, #8879ff, #5c50df);
+      box-shadow: 0 8px 20px rgba(101, 88, 232, 0.28);
+      font-size: 22px;
+    }
+
+    .brand-name {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+
+    .brand-caption {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+    }
+
+    .card {
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr 0.92fr;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 28px;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .form-panel {
+      padding: 44px 42px;
+    }
+
+    .eyebrow {
+      margin: 0 0 12px;
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(27px, 4vw, 36px);
+      letter-spacing: -0.04em;
+      line-height: 1.35;
+    }
+
+    .intro {
+      margin: 12px 0 30px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.8;
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    .field-label {
+      margin-bottom: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .field-hint {
+      color: #a0a4b6;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      height: 56px;
+      padding: 0 56px 0 16px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      outline: none;
+      color: var(--ink);
+      background: #fbfbfe;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    input[type="number"]:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(101, 88, 232, 0.12);
+    }
+
+    input::placeholder {
+      color: #b5b8c6;
+    }
+
+    .unit {
+      position: absolute;
+      top: 50%;
+      right: 17px;
+      color: var(--muted);
+      font-size: 12px;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+
+    .button-row {
+      margin-top: 28px;
+      display: flex;
+      gap: 11px;
+    }
+
+    button {
+      min-height: 52px;
+      border: 0;
+      border-radius: 13px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 800;
+      transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    .calculate-button {
+      flex: 1;
+      color: #fff;
+      background: linear-gradient(100deg, #7164f2, #5c50df);
+      box-shadow: 0 9px 20px rgba(101, 88, 232, 0.24);
+    }
+
+    .calculate-button:hover {
+      background: linear-gradient(100deg, #6659e7, var(--primary-dark));
+      box-shadow: 0 11px 24px rgba(101, 88, 232, 0.31);
+    }
+
+    .reset-button {
+      padding: 0 20px;
+      color: #666c82;
+      background: #f1f2f8;
+    }
+
+    .reset-button:hover {
+      background: #e8e9f2;
+    }
+
+    .error-message {
+      min-height: 20px;
+      margin: 12px 0 0;
+      color: #d44c61;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .result-panel {
+      min-height: 100%;
+      padding: 42px 36px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background:
+        radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.18), transparent 28%),
+        linear-gradient(155deg, #7569ef, #5146ce);
+      color: #fff;
+    }
+
+    .result-heading {
+      margin: 0 0 23px;
+      color: rgba(255, 255, 255, 0.76);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+    }
+
+    .result-box {
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(8px);
+    }
+
+    .result-caption {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 12px;
+    }
+
+    .bmi-value {
+      margin: 5px 0 1px;
+      font-size: clamp(54px, 8vw, 70px);
+      font-weight: 800;
+      letter-spacing: -0.06em;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .bmi-category {
+      min-height: 25px;
+      margin: 8px 0 0;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .result-divider {
+      height: 1px;
+      margin: 21px 0;
+      background: rgba(255, 255, 255, 0.23);
+    }
+
+    .ideal-label {
+      margin: 0;
+      color: rgba(255, 255, 255, 0.78);
+      font-size: 12px;
+    }
+
+    .ideal-weight {
+      margin: 7px 0 0;
+      font-size: 25px;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ideal-weight span {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .result-note {
+      margin: 18px 0 0;
+      color: rgba(255, 255, 255, 0.74);
+      font-size: 11px;
+      line-height: 1.8;
+    }
+
+    .empty-state {
+      margin: 0;
+      padding: 20px 4px;
+      color: rgba(255, 255, 255, 0.86);
+      font-size: 14px;
+      line-height: 1.9;
+    }
+
+    .footer {
+      margin: 17px 5px 0;
+      color: #858aa0;
+      font-size: 11px;
+      line-height: 1.7;
+      text-align: center;
+    }
+
+    @media (max-width: 700px) {
+      body {
+        padding: 22px 14px;
+        place-items: start center;
+      }
+
+      .app {
+        max-width: 480px;
+      }
+
+      .header {
+        margin-bottom: 17px;
+      }
+
+      .card {
+        grid-template-columns: 1fr;
+        border-radius: 23px;
+      }
+
+      .form-panel {
+        padding: 30px 24px 19px;
+      }
+
+      .intro {
+        margin-bottom: 24px;
+      }
+
+      .result-panel {
+        min-height: auto;
+        padding: 27px 24px 30px;
+      }
+
+      .result-heading {
+        margin-bottom: 16px;
+      }
+
+      .result-box {
+        padding: 21px;
+      }
+
+      .bmi-value {
+        font-size: 58px;
+      }
+
+      .footer {
+        margin-top: 13px;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .form-panel {
+        padding-right: 18px;
+        padding-left: 18px;
+      }
+
+      .result-panel {
+        padding-right: 18px;
+        padding-left: 18px;
+      }
+
+      .button-row {
+        gap: 8px;
+      }
+
+      .reset-button {
+        padding: 0 15px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <div class="brand-mark" aria-hidden="true">✦</div>
+      <div>
+        <p class="brand-name">からだバランス</p>
+        <p class="brand-caption">BODY BALANCE CHECK</p>
+      </div>
+    </header>
+
+    <section class="card" aria-labelledby="page-title">
+      <div class="form-panel">
+        <p class="eyebrow">YOUR HEALTH, YOUR PACE</p>
+        <h1 id="page-title">BMIを<br>チェックしましょう</h1>
+        <p class="intro">
+          身長と体重を入力すると、BMIと適正体重の目安を計算します。
+        </p>
+
+        <form id="bmi-form" novalidate>
+          <div class="field">
+            <label class="field-label" for="height">
+              身長
+              <span class="field-hint">例：160</span>
+            </label>
+            <div class="input-wrap">
+              <input
+                id="height"
+                name="height"
+                type="number"
+                inputmode="decimal"
+                min="50"
+                max="250"
+                step="0.1"
+                placeholder="身長を入力"
+                aria-describedby="error-message"
+                required
+              >
+              <span class="unit">cm</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="weight">
+              体重
+              <span class="field-hint">例：55</span>
+            </label>
+            <div class="input-wrap">
+              <input
+                id="weight"
+                name="weight"
+                type="number"
+                inputmode="decimal"
+                min="10"
+                max="500"
+                step="0.1"
+                placeholder="体重を入力"
+                aria-describedby="error-message"
+                required
+              >
+              <span class="unit">kg</span>
+            </div>
+          </div>
+
+          <div class="button-row">
+            <button class="calculate-button" type="submit">BMIを計算する</button>
+            <button class="reset-button" id="reset-button" type="button">リセット</button>
+          </div>
+          <p class="error-message" id="error-message" role="alert" aria-live="polite"></p>
+        </form>
+      </div>
+
+      <aside class="result-panel" aria-live="polite" aria-atomic="true">
+        <p class="result-heading">CALCULATION RESULT</p>
+        <div id="result-content">
+          <p class="empty-state">
+            身長と体重を入力して<br>
+            「BMIを計算する」を押してください。
+          </p>
+        </div>
+      </aside>
+    </section>
+
+    <p class="footer">
+      BMIは健康状態を知るための目安です。診断や治療については医療機関にご相談ください。
+    </p>
+  </main>
+
+  <script>
+    const form = document.getElementById("bmi-form");
+    const heightInput = document.getElementById("height");
+    const weightInput = document.getElementById("weight");
+    const resetButton = document.getElementById("reset-button");
+    const errorMessage = document.getElementById("error-message");
+    const resultContent = document.getElementById("result-content");
+
+    function getBmiCategory(bmi) {
+      if (bmi < 18.5) {
+        return "低体重";
+      }
+
+      if (bmi < 25) {
+        return "普通体重";
+      }
+
+      if (bmi < 30) {
+        return "肥満（1度）";
+      }
+
+      if (bmi < 35) {
+        return "肥満（2度）";
+      }
+
+      if (bmi < 40) {
+        return "肥満（3度）";
+      }
+
+      return "肥満（4度）";
+    }
+
+    function showError(message) {
+      errorMessage.textContent = message;
+    }
+
+    function clearError() {
+      errorMessage.textContent = "";
+    }
+
+    form.addEventListener("submit", function (event) {
+      event.preventDefault();
+      clearError();
+
+      const heightCm = Number(heightInput.value);
+      const weightKg = Number(weightInput.value);
+
+      if (!heightInput.value || !weightInput.value) {
+        showError("身長と体重を両方入力してください。");
+        return;
+      }
+
+      if (!Number.isFinite(heightCm) || heightCm < 50 || heightCm > 250) {
+        showError("身長は50〜250cmの範囲で入力してください。");
+        heightInput.focus();
+        return;
+      }
+
+      if (!Number.isFinite(weightKg) || weightKg < 10 || weightKg > 500) {
+        showError("体重は10〜500kgの範囲で入力してください。");
+        weightInput.focus();
+        return;
+      }
+
+      const heightM = heightCm / 100;
+      const bmi = weightKg / (heightM * heightM);
+      const idealWeight = 22 * heightM * heightM;
+      const category = getBmiCategory(bmi);
+
+      resultContent.innerHTML = `
+        <div class="result-box">
+          <p class="result-caption">あなたのBMI</p>
+          <p class="bmi-value">${bmi.toFixed(1)}</p>
+          <p class="bmi-category">${category}</p>
+          <div class="result-divider"></div>
+          <p class="ideal-label">適正体重の目安（BMI 22）</p>
+          <p class="ideal-weight">${idealWeight.toFixed(1)} <span>kg</span></p>
+        </div>
+        <p class="result-note">
+          BMIは体重(kg) ÷ 身長(m) ÷ 身長(m)で計算しています。
+          適正体重はBMI 22を基準にした目安です。
+        </p>
+      `;
+    });
+
+    resetButton.addEventListener("click", function () {
+      form.reset();
+      clearError();
+
+      resultContent.innerHTML = `
+        <p class="empty-state">
+          身長と体重を入力して<br>
+          「BMIを計算する」を押してください。
+        </p>
+      `;
+
+      heightInput.focus();
+    });
+
+    heightInput.addEventListener("input", clearError);
+    weightInput.addEventListener("input", clearError);
+  </script>
+</body>
+</html>
